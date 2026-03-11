@@ -15,21 +15,23 @@ var allOrders = [];
 // ===== INIT =====
 async function init() {
   try {
+    var params = new URLSearchParams(window.location.search);
+
     await liff.init({ liffId: CONFIG.LIFF_ID });
 
-    if (!liff.isLoggedIn()) {
+    if (liff.isLoggedIn()) {
+      var profile = await liff.getProfile();
+      userId = profile.userId;
+      currentDisplayName = profile.displayName || '';
+      document.getElementById('profile-pic').src = profile.pictureUrl || '';
+      document.getElementById('profile-name').textContent = profile.displayName;
+    } else if (params.get('userId')) {
+      userId = params.get('userId');
+      document.getElementById('profile-name').textContent = 'Dev Mode';
+    } else {
       liff.login();
       return;
     }
-
-    var profile = await liff.getProfile();
-    userId = profile.userId;
-    currentDisplayName = profile.displayName || '';
-
-    var params = new URLSearchParams(window.location.search);
-
-    document.getElementById('profile-pic').src = profile.pictureUrl || '';
-    document.getElementById('profile-name').textContent = profile.displayName;
 
     if (params.get('tab') === 'orders') {
       switchTab('orders');
@@ -75,13 +77,6 @@ function loadUserData() {
       if (data.user && data.user.blocked) {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('blocked-section').style.display = 'block';
-        document.querySelector('.tabs').style.display = 'none';
-        return;
-      }
-
-      if (data.user && !data.user.approved) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('pending-approval-section').style.display = 'block';
         document.querySelector('.tabs').style.display = 'none';
         return;
       }

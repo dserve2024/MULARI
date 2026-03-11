@@ -9,15 +9,19 @@ var _dashData = null;
 async function initAdmin() {
   var loadingEl = document.getElementById('loading');
   try {
+    var params = new URLSearchParams(window.location.search);
+
     await liff.init({ liffId: '2009422664-VYlqKOXu' });
 
-    if (!liff.isLoggedIn()) {
+    if (liff.isLoggedIn()) {
+      var profile = await liff.getProfile();
+      userId = profile.userId;
+    } else if (params.get('userId')) {
+      userId = params.get('userId');
+    } else {
       liff.login();
       return;
     }
-
-    var profile = await liff.getProfile();
-    userId = profile.userId;
 
     isAdminUser = true;
     if (loadingEl) loadingEl.style.display = 'none';
