@@ -978,7 +978,7 @@ function renderAdminOrdersFilter() {
   var totalAll = 0;
   for (var k in counts) { totalAll += counts[k]; }
 
-  var html = '';
+  var html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">';
   var nc = adminNameCounts || {};
   var nameKeys = Object.keys(nc);
   if (nameKeys.length > 0) {
@@ -995,6 +995,8 @@ function renderAdminOrdersFilter() {
     });
     html += '</select>';
   }
+  html += '<button onclick="showCreateOrderModal()" style="background:var(--green);color:white;border:none;border-radius:var(--r-xs);padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--f-th);white-space:nowrap;">➕ เพิ่มออเดอร์</button>';
+  html += '</div>';
 
   var statuses = [
     { key: 'all', label: 'ทั้งหมด', count: totalAll },
@@ -1310,6 +1312,134 @@ function confirmDeleteAdminOrder() {
   }).catch(function(err) {
     hideLoading();
     showToast('❌ เกิดข้อผิดพลาด: ' + (err.message || err));
+  });
+}
+
+// ===== CREATE ORDER MODAL =====
+function showCreateOrderModal() {
+  var bodyEl = document.getElementById('admin-order-modal-body');
+  var actEl = document.getElementById('admin-order-modal-actions');
+
+  adminEditOrderId = null;
+
+  var nc = adminNameCounts || {};
+  var userKeys = Object.keys(nc).sort(function(a, b) {
+    return (nc[a].displayName || '').localeCompare(nc[b].displayName || '');
+  });
+
+  var statuses = ['Pending', 'Completed', 'Transferring', 'Transferred', 'Canceled', 'Incorrect', 'Ambiguous', 'Investigating'];
+
+  var html = '<div style="font-weight:700;font-size:13px;margin-bottom:12px;color:var(--green);">➕ เพิ่มออเดอร์ใหม่</div>';
+
+  html += '<div class="aod-field-row">';
+  html += '<div class="aod-field half"><label>👤 User</label>';
+  if (userKeys.length > 0) {
+    html += '<select id="acod-userId"><option value="">-- เลือก User --</option>';
+    userKeys.forEach(function(uid) {
+      html += '<option value="' + uid + '">' + (nc[uid].displayName || uid) + '</option>';
+    });
+    html += '</select>';
+  } else {
+    html += '<input type="text" id="acod-userId" placeholder="LINE User ID">';
+  }
+  html += '</div>';
+  html += '<div class="aod-field half"><label>Order ID</label><input type="text" id="acod-orderId" placeholder="กรอก Order ID"></div>';
+  html += '</div>';
+
+  html += '<div class="aod-field-row">';
+  html += '<div class="aod-field half"><label>Shopee ID</label><input type="text" id="acod-shopeeId" placeholder="Shopee ID"></div>';
+  html += '<div class="aod-field half"><label>Status</label><select id="acod-status">';
+  statuses.forEach(function(s) {
+    html += '<option value="' + s + '"' + (s === 'Pending' ? ' selected' : '') + '>' + s + '</option>';
+  });
+  html += '</select></div>';
+  html += '</div>';
+
+  html += '<div class="aod-field-row">';
+  html += '<div class="aod-field half"><label>Order Time</label><input type="datetime-local" id="acod-orderTime"></div>';
+  html += '<div class="aod-field half"><label>Payment Time</label><input type="datetime-local" id="acod-paymentTime"></div>';
+  html += '</div>';
+
+  html += '<div class="aod-divider"></div>';
+  html += '<div style="font-weight:700;font-size:12px;margin-bottom:8px;">💰 Financial</div>';
+
+  html += '<div class="aod-field-row">';
+  html += '<div class="aod-field third"><label>Subtotal</label><input type="number" id="acod-subtotal" value="0" oninput="recalcCreateHint()"></div>';
+  html += '<div class="aod-field third"><label>Shipping</label><input type="number" id="acod-shipping" value="0"></div>';
+  html += '<div class="aod-field third"><label>Ship Dis.</label><input type="number" id="acod-shippingDiscount" value="0"></div>';
+  html += '</div>';
+
+  html += '<div class="aod-field-row">';
+  html += '<div class="aod-field half"><label>Voucher <span id="acod-voucher-pct" class="aod-pct-badge">(0%)</span></label><input type="number" id="acod-voucher" value="0" oninput="recalcCreateHint()"></div>';
+  html += '<div class="aod-field half"><label>Order Total</label><input type="number" id="acod-orderTotal" value="0"></div>';
+  html += '</div>';
+
+  html += '<div class="aod-divider"></div>';
+  html += '<div style="font-weight:700;font-size:12px;margin-bottom:8px;">💳 Refund & Deposit</div>';
+
+  html += '<div class="aod-field-row">';
+  html += '<div class="aod-field half"><label>Refund Amount</label><input type="number" id="acod-refundAmount" value="0" style="border-color:var(--green);"></div>';
+  html += '<div class="aod-field half"><label>Deposit Amount</label><input type="number" id="acod-depositAmount" value="0" oninput="recalcCreateHint()" style="border-color:var(--blue);"></div>';
+  html += '</div>';
+  html += '<div id="acod-refund-hint" class="aod-calc-hint">= 0 - 0 - 0 = ฿0</div>';
+
+  bodyEl.innerHTML = html;
+  actEl.innerHTML = '<button class="btn-cancel" onclick="hideModal(\'adminOrderModal\')">← ยกเลิก</button>'
+    + '<button class="btn-confirm-green" onclick="createAdminOrder()">➕ สร้างออเดอร์</button>';
+
+  showModal('adminOrderModal');
+}
+
+function recalcCreateHint() {
+  var sub = parseFloat(document.getElementById('acod-subtotal').value) || 0;
+  var voucher = parseFloat(document.getElementById('acod-voucher').value) || 0;
+  var depositEl = document.getElementById('acod-depositAmount');
+  var deposit = depositEl ? (parseFloat(depositEl.value) || 0) : 0;
+  var calc = sub - voucher - deposit;
+
+  var hintEl = document.getElementById('acod-refund-hint');
+  if (hintEl) hintEl.textContent = '= ' + numberFormat(sub) + ' - ' + numberFormat(voucher) + ' - ' + numberFormat(deposit) + ' = ฿' + numberFormat(calc);
+
+  var pctEl = document.getElementById('acod-voucher-pct');
+  if (pctEl) pctEl.textContent = '(' + (sub > 0 ? Math.round(voucher / sub * 100) : 0) + '%)';
+}
+
+function createAdminOrder() {
+  var targetUserId = document.getElementById('acod-userId').value.trim();
+  var orderId = document.getElementById('acod-orderId').value.trim();
+
+  if (!targetUserId) { showToast('❌ กรุณาเลือก User'); return; }
+  if (!orderId) { showToast('❌ กรุณาระบุ Order ID'); return; }
+
+  var params = {
+    targetUserId: targetUserId,
+    orderId: orderId,
+    shopeeId: document.getElementById('acod-shopeeId').value.trim(),
+    status: document.getElementById('acod-status').value,
+    orderTime: document.getElementById('acod-orderTime').value,
+    paymentTime: document.getElementById('acod-paymentTime').value,
+    subtotal: document.getElementById('acod-subtotal').value,
+    shipping: document.getElementById('acod-shipping').value,
+    shippingDiscount: document.getElementById('acod-shippingDiscount').value,
+    voucher: document.getElementById('acod-voucher').value,
+    orderTotal: document.getElementById('acod-orderTotal').value,
+    refundAmount: document.getElementById('acod-refundAmount').value,
+    depositAmount: document.getElementById('acod-depositAmount').value
+  };
+
+  showLoading('กำลังสร้างออเดอร์...');
+  apiCall('adminCreateOrder', params).then(function(data) {
+    hideLoading();
+    if (data.success) {
+      showToast('✅ สร้าง Order ' + data.orderId + ' สำเร็จ');
+      hideModal('adminOrderModal');
+      loadAdminOrders();
+    } else {
+      showToast('❌ ' + (data.error || 'ไม่สำเร็จ'));
+    }
+  }).catch(function() {
+    hideLoading();
+    showToast('❌ เกิดข้อผิดพลาด');
   });
 }
 
