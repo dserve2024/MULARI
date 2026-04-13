@@ -991,7 +991,7 @@ function renderAdminOrdersFilter() {
     html += '<option value="">👤 ทั้งหมด</option>';
     nameKeys.forEach(function(uid) {
       var sel = adminUserFilter === uid ? ' selected' : '';
-      html += '<option value="' + uid + '"' + sel + '>' + (nc[uid].displayName || uid) + ' (' + nc[uid].count + ')</option>';
+      html += '<option value="' + uid + '"' + sel + '>' + (nc[uid].displayName || 'Unknown') + ' (' + nc[uid].count + ')</option>';
     });
     html += '</select>';
   }
@@ -1157,7 +1157,7 @@ function renderAdminOrderDetail(order) {
   html += '<div class="aod-row half"><span class="aod-label">Order Time</span><span class="aod-value">' + formatDateTime(order.orderTime) + '</span></div>';
   html += '</div>';
   html += '<div class="aod-field-row">';
-  html += '<div class="aod-row half"><span class="aod-label">👤 ชื่อ</span><span class="aod-value" style="font-weight:700;color:var(--accent);">' + (order.displayName || order.userId || '-') + '</span></div>';
+  html += '<div class="aod-row half"><span class="aod-label">👤 ชื่อ</span><span class="aod-value" style="font-weight:700;color:var(--accent);">' + (order.displayName || '-') + '</span></div>';
   html += '<div class="aod-row half"><span class="aod-label">Created By</span><span class="aod-value">' + (order.createdBy || '-') + '</span></div>';
   html += '</div>';
 
