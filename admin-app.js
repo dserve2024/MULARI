@@ -1121,7 +1121,7 @@ function showAdminOrderDetail(orderId) {
   actEl.innerHTML = '';
   showModal('adminOrderModal');
 
-  apiCall('getOrderDetail', { orderId: orderId }).then(function(data) {
+  apiCall('adminGetOrder', { orderId: orderId }).then(function(data) {
     if (!data.success) {
       bodyEl.innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>' + (data.error || 'ไม่พบข้อมูล') + '</p></div>';
       actEl.innerHTML = '<button class="btn-cancel" onclick="hideModal(\'adminOrderModal\')">ปิด</button>';
