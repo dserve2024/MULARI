@@ -1,6 +1,6 @@
 var CONFIG = {
   LIFF_ID: '2009422664-jGGTOgjJ',
-  API_URL: 'https://script.google.com/macros/s/AKfycbyWIFeFq6ZvUxDP_eyoynZGFXRkSYroC72uM2GeU7sEvIh9LGRH9dcI5s2gsuZug43QSQ/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbxl04hycnTE9BUVFqcSVP6YVk_A5ERJ31w1nipz6sMfv5kkG7sZi3zcAEUk-PqaNb1C-A/exec',
   SHOP_NAME: 'MULARI'
 };
 

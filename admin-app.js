@@ -343,23 +343,13 @@ function executePayment() {
 
   showLoading('กำลังดำเนินการ...');
 
-  var refundOrders = selectedOrders.filter(function(o) { return o.type !== 'deposit'; });
-  var depositOrders = selectedOrders.filter(function(o) { return o.type === 'deposit'; });
   var promises = [];
-  if (refundOrders.length > 0) {
+  if (selectedOrders.length > 0) {
     promises.push(apiCall('adminConfirmPayment', {
       targetUserId: confirmPayUserId,
-      orderIds: refundOrders.map(function(o) { return o.orderId; }).join(','),
-      totalAmount: refundOrders.reduce(function(s, o) { return s + (parseFloat(o.amount) || 0); }, 0),
-      type: 'refund'
-    }));
-  }
-  if (depositOrders.length > 0) {
-    promises.push(apiCall('adminConfirmPayment', {
-      targetUserId: confirmPayUserId,
-      orderIds: depositOrders.map(function(o) { return o.orderId; }).join(','),
-      totalAmount: depositOrders.reduce(function(s, o) { return s + (parseFloat(o.amount) || 0); }, 0),
-      type: 'deposit'
+      orderIds: selectedOrders.map(function(o) { return o.orderId; }).join(','),
+      totalAmount: selectedOrders.reduce(function(s, o) { return s + (parseFloat(o.amount) || 0); }, 0),
+      type: user.type
     }));
   }
 
@@ -492,23 +482,13 @@ function bulkApproveAll() {
     var orders = selected.size > 0
       ? user.orders.filter(function(o) { return selected.has(o.orderId); })
       : user.orders;
-    var refundOrders = orders.filter(function(o) { return o.type !== 'deposit'; });
-    var depositOrds = orders.filter(function(o) { return o.type === 'deposit'; });
     var promises = [];
-    if (refundOrders.length > 0) {
+    if (orders.length > 0) {
       promises.push(apiCall('adminConfirmPayment', {
         targetUserId: user.userId,
-        orderIds: refundOrders.map(function(o) { return o.orderId; }).join(','),
-        totalAmount: refundOrders.reduce(function(s, o) { return s + (parseFloat(o.amount) || 0); }, 0),
-        type: 'refund'
-      }));
-    }
-    if (depositOrds.length > 0) {
-      promises.push(apiCall('adminConfirmPayment', {
-        targetUserId: user.userId,
-        orderIds: depositOrds.map(function(o) { return o.orderId; }).join(','),
-        totalAmount: depositOrds.reduce(function(s, o) { return s + (parseFloat(o.amount) || 0); }, 0),
-        type: 'deposit'
+        orderIds: orders.map(function(o) { return o.orderId; }).join(','),
+        totalAmount: orders.reduce(function(s, o) { return s + (parseFloat(o.amount) || 0); }, 0),
+        type: user.type
       }));
     }
     Promise.all(promises).then(function() {
