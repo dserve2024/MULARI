@@ -1157,8 +1157,8 @@ function renderAdminOrderDetail(order) {
   html += '<div class="aod-row half"><span class="aod-label">Order Time</span><span class="aod-value">' + formatDateTime(order.orderTime) + '</span></div>';
   html += '</div>';
   html += '<div class="aod-field-row">';
+  html += '<div class="aod-row half"><span class="aod-label">👤 ชื่อ</span><span class="aod-value" style="font-weight:700;color:var(--accent);">' + (order.displayName || order.userId || '-') + '</span></div>';
   html += '<div class="aod-row half"><span class="aod-label">Created By</span><span class="aod-value">' + (order.createdBy || '-') + '</span></div>';
-  html += '<div class="aod-row half"><span class="aod-label">Last Edited</span><span class="aod-value">' + (order.lastEditedBy || '-') + '</span></div>';
   html += '</div>';
 
   html += '<div class="aod-divider"></div>';
