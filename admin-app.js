@@ -628,7 +628,7 @@ function renderAdminDepositReturns(items) {
 
 function adminReviewDeposit(submissionIds, action) {
   showLoading('กำลังดำเนินการ...');
-  apiCall('adminReviewDeposit', { submissionId: submissionIds, reviewAction: action }).then(function(data) {
+  apiCall('adminReviewDepositReturn', { submissionId: submissionIds, reviewAction: action }).then(function(data) {
     hideLoading();
     if (data.success) {
       showToast(action === 'approve' ? '✅ อนุมัติแล้ว' : '❌ ปฏิเสธแล้ว');
@@ -646,7 +646,7 @@ function promptRejectDeposit(submissionIds) {
   var reason = prompt('เหตุผลที่ปฏิเสธ:');
   if (reason === null) return;
   showLoading('กำลังดำเนินการ...');
-  apiCall('adminReviewDeposit', { submissionId: submissionIds, reviewAction: 'reject', adminNote: reason }).then(function(data) {
+  apiCall('adminReviewDepositReturn', { submissionId: submissionIds, reviewAction: 'reject', adminNote: reason }).then(function(data) {
     hideLoading();
     if (data.success) {
       showToast('❌ ปฏิเสธแล้ว');
@@ -810,7 +810,7 @@ function saveFeeRate() {
   }
   hideModal('feeSettingsModal');
   showLoading('กำลังบันทึก...');
-  apiCall('adminSetPlatformFee', { feeRate: pct }).then(function(res) {
+  apiCall('adminSaveFeeSettings', { feeRate: pct }).then(function(res) {
     hideLoading();
     if (res.success) {
       showToast('บันทึกค่าธรรมเนียม ' + pct + '% แล้ว');

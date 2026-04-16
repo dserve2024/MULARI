@@ -70,7 +70,7 @@ function apiPost(data) {
 
 // ===== LOAD DATA =====
 function loadUserData() {
-  apiCall('getUserData').then(function(data) {
+  apiCall('getUser').then(function(data) {
     if (data.success) {
       userData = data;
 
@@ -324,7 +324,7 @@ function saveBank() {
   };
 
   showLoading('กำลังบันทึก...');
-  apiCall('updateBank', params).then(function(data) {
+  apiCall('updateProfile', params).then(function(data) {
     hideLoading();
     if (data.success) {
       showToast('✅ บันทึกสำเร็จ');
@@ -738,7 +738,7 @@ function viewOrder(orderId) {
   }
 
   if (!userData || !userData.shopeeIds) {
-    apiCall('getUserData').then(function(data) {
+    apiCall('getUser').then(function(data) {
       if (data.success) { userData = data; }
       doViewOrder();
     }).catch(function() { doViewOrder(); });
@@ -953,12 +953,12 @@ function showDisputeModal(orderId) {
 }
 
 function submitDispute() {
-  var params = {
-    orderId: document.getElementById('dispute-order-id').value,
-    reason: document.getElementById('dispute-reason').value,
-    detail: document.getElementById('dispute-detail').value
-  };
-  if (!params.reason) { showToast('กรุณาเลือกเหตุผล'); return; }
+  var orderId = document.getElementById('dispute-order-id').value;
+  var reason = document.getElementById('dispute-reason').value;
+  var detail = document.getElementById('dispute-detail').value;
+  if (!reason) { showToast('กรุณาเลือกเหตุผล'); return; }
+  var message = '⚠️ แจ้งปัญหาออเดอร์\n📋 Order: ' + orderId + '\n❓ เหตุผล: ' + reason + (detail ? '\n💬 ' + detail : '');
+  var params = { message: message };
   showLoading('กำลังส่ง...');
   apiCall('contactAdmin', params).then(function(data) {
     hideLoading();
